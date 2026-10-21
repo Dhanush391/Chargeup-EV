@@ -1,0 +1,22 @@
+# Python & Virtual Environments
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Large Raw Datasets (Users download or place locally)
+Data/creditcard.csv
+Data/ChargePointData.csv
+*.csv
+
+# OS metadata
+.DS_Store
+Thumbs.db

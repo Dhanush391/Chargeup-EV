@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">ChargePoint Data CY20Q4 Dataset Documentation</h1>
+            <p class="page-subtitle">Real-world electric vehicle charging session telemetry from municipal and public chargers in Palo Alto, California.</p>
+        </div>
+        <div class="model-badge-active">
+            <i data-lucide="database"></i>
+            <span>259,410 Sessions • 47 Stations</span>
+        </div>
+    </div>
+
+    <!-- METRICS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">RAW RECORDS</span>
+                <div class="stat-icon-wrap stat-icon-blue"><i data-lucide="file-spreadsheet"></i></div>
+            </div>
+            <div class="stat-value">259,415</div>
+            <div class="stat-sub">Calendar Year 2020 Q4 release</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">POST-CLEANING SESSIONS</span>
+                <div class="stat-icon-wrap stat-icon-emerald"><i data-lucide="check-check"></i></div>
+            </div>
+            <div class="stat-value">259,410</div>
+            <div class="stat-sub">Valid timestamps & positive kWh</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">PHYSICAL STATIONS</span>
+                <div class="stat-icon-wrap stat-icon-cyan"><i data-lucide="zap"></i></div>
+            </div>
+            <div class="stat-value">47</div>
+            <div class="stat-sub">Level 2 EVSE charging points</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">DATE SPAN</span>
+                <div class="stat-icon-wrap stat-icon-purple"><i data-lucide="calendar"></i></div>
+            </div>
+            <div class="stat-value">2011 &ndash; 2020</div>
+            <div class="stat-sub">9.5 years historical coverage</div>
+        </div>
+    </div>
+
+    <!-- SCHEMA OVERVIEW (FROM PPT SLIDE 5) -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <i data-lucide="columns" class="card-icon text-cyan"></i>
+                <div>
+                    <h3 class="card-title">Core Dataset Columns & Operational Purpose</h3>
+                    <p class="card-desc">As defined in the project specification (Slide 5)</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Column Name</th>
+                            <th>Data Type</th>
+                            <th>Functional Role in CHARGEUP</th>
+                            <th>Handling & Transformation Rule</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Station Name</code></td>
+                            <td>String</td>
+                            <td>Station identifier & segmentation unit</td>
+                            <td>Group key for station statistics & K-Means clustering.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Start Date</code></td>
+                            <td>Datetime</td>
+                            <td>Session start timestamp</td>
+                            <td>Converted via <code>pd.to_datetime(format='mixed')</code>, floored to hour for demand aggregation.</td>
+                        </tr>
+                        <tr>
+                            <td><code>End Date</code></td>
+                            <td>Datetime</td>
+                            <td>Session end timestamp</td>
+                            <td>Used to compute session duration and check timestamp validity.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Energy (kWh)</code></td>
+                            <td>Float</td>
+                            <td>Electricity transferred to EV battery</td>
+                            <td>Filtered to positive values (<code>> 0</code>); summed hourly for XGBoost demand forecasting target.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Ended By</code></td>
+                            <td>String</td>
+                            <td>Operational termination indicator</td>
+                            <td>Rule-mapped into proxy fault flags: <code>FAULT=0</code> (Normal), <code>FAULT=1</code> (Abnormal), or Unknown.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Total Duration</code></td>
+                            <td>Time (hh:mm:ss)</td>
+                            <td>Total parked time at charging stall</td>
+                            <td>Used for dwell time analysis and station occupancy validation.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Charging Time</code></td>
+                            <td>Time (hh:mm:ss)</td>
+                            <td>Active current flow time</td>
+                            <td>Measures active power delivery vs idle parking dwell time.</td>
+                        </tr>
+                        <tr>
+                            <td><code>City</code>, <code>Postal Code</code></td>
+                            <td>String</td>
+                            <td>Geographic location</td>
+                            <td>Identifies Palo Alto, CA municipal and commercial zones.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAMPLE RAW DATA TABLE -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <i data-lucide="table" class="card-icon text-emerald"></i>
+                <div>
+                    <h3 class="card-title">Live Sample Records Preview (ChargePointData.csv)</h3>
+                    <p class="card-desc">Inspecting actual loaded session telemetry</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Station Name</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Energy (kWh)</th>
+                            <th>Ended By</th>
+                            <th>City</th>
+                            <th>Port Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in sample_rows | default([]) %}
+                        <tr>
+                            <td class="font-bold">{{ row['Station Name'] }}</td>
+                            <td><code>{{ row['Start Date'] }}</code></td>
+                            <td><code>{{ row['End Date'] }}</code></td>
+                            <td>{{ "{:,.2f}".format(row['Energy (kWh)']) }}</td>
+                            <td><span class="badge-tag">{{ row['Ended By'] }}</span></td>
+                            <td>{{ row['City'] }}</td>
+                            <td>{{ row['Port Type'] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- DATASET PLACEMENT GUIDE -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i data-lucide="folder-check"></i> Dataset Placement & Download Instructions</h3>
+        </div>
+        <div class="card-body">
+            <div class="placement-steps">
+                <p>To refresh or retrain the pipeline with an updated ChargePoint release:</p>
+                <ol class="ordered-list">
+                    <li>Download the official <strong>ChargePoint Data CY20Q4</strong> CSV export from the open data portal (City of Palo Alto Open Data / Kaggle / ChargePoint archive).</li>
+                    <li>Place the CSV file directly into the <code>Data/</code> directory named as <code>ChargePointData.csv</code>:
+                        <pre class="code-box">ChargeUp_EV/Data/ChargePointData.csv</pre>
+                    </li>
+                    <li>Run the automated feature engineering and model training pipeline:
+                        <pre class="code-box">python ml_engine.py</pre>
+                    </li>
+                    <li>The system will automatically regenerate models (<code>xgboost_demand_model.pkl</code>, <code>kmeans_station_model.pkl</code>), summary statistics (<code>pipeline_summary.json</code>), and dashboard charts.</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Dataset Loading & Verification</h1>
+            <p class="page-subtitle">ChargePoint Data CY20Q4 raw file ingestion and schema integrity check.</p>
+        </div>
+        <a href="/dataset-docs" class="btn btn-primary"><i data-lucide="file-text"></i> Full Documentation</a>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">DATASET SOURCE</span>
+                <div class="stat-icon-wrap stat-icon-cyan"><i data-lucide="database"></i></div>
+            </div>
+            <div class="stat-value">ChargePoint CY20Q4</div>
+            <div class="stat-sub">Palo Alto Open Data Archive</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">RAW RECORDS COUNT</span>
+                <div class="stat-icon-wrap stat-icon-blue"><i data-lucide="layers"></i></div>
+            </div>
+            <div class="stat-value">259,415</div>
+            <div class="stat-sub">Valid Sessions: 259,410</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">STATIONS DETECTED</span>
+                <div class="stat-icon-wrap stat-icon-emerald"><i data-lucide="map-pin"></i></div>
+            </div>
+            <div class="stat-value">47 Stations</div>
+            <div class="stat-sub">Level 2 EVSE Infrastructure</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">FILE LOCATION</span>
+                <div class="stat-icon-wrap stat-icon-amber"><i data-lucide="folder"></i></div>
+            </div>
+            <div class="stat-value" style="font-size: 16px;">Data/ChargePointData.csv</div>
+            <div class="stat-sub">85.4 MB CSV File</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

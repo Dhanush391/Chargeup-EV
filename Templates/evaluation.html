@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Fault-Event Detection (Proxy Indicator)</h1>
+            <p class="page-subtitle">Rule-based classification of charging session anomalies and station outages using the <strong>Ended By</strong> termination field.</p>
+        </div>
+        <div class="badge-fault-indicator">
+            <i data-lucide="alert-triangle"></i>
+            <span>Proxy-Based Operational Indicator</span>
+        </div>
+    </div>
+
+    <!-- PROXY LIMITATION DISCLAIMER (MANDATORY REQUIREMENT) -->
+    <div class="alert-box-warning">
+        <div class="alert-icon"><i data-lucide="shield-alert"></i></div>
+        <div class="alert-text">
+            <strong>Important Operational Disclosure:</strong>
+            The ChargePoint CY20Q4 dataset does not contain dedicated hardware sensor ground-truth failure logs. This module utilizes the session termination attribute (<code>Ended By</code>) as an operational <strong>proxy indicator</strong> for potential station disruptions (e.g., Outlet Unreachable, Station Offline, GFCI ground-fault trips). This classification does not replace verified hardware telemetry or physical maintenance diagnosis.
+        </div>
+    </div>
+
+    <!-- METRICS GRID -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">TOTAL ANALYZED SESSIONS</span>
+                <div class="stat-icon-wrap stat-icon-blue">
+                    <i data-lucide="layers"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(fault.total_sessions | default(259410)) }}</div>
+            <div class="stat-sub">100% of parsed records evaluated</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">NORMAL TERMINATIONS (FAULT=0)</span>
+                <div class="stat-icon-wrap stat-icon-emerald">
+                    <i data-lucide="check-circle-2"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(fault.normal_count | default(258885)) }}</div>
+            <div class="stat-sub">99.8% customer / vehicle unplugged</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">ABNORMAL EVENTS (FAULT=1)</span>
+                <div class="stat-icon-wrap stat-icon-rose">
+                    <i data-lucide="alert-octagon"></i>
+                </div>
+            </div>
+            <div class="stat-value text-rose">{{ "{:,}".format(fault.abnormal_count | default(244)) }}</div>
+            <div class="stat-sub">Fault Rate: <strong>{{ fault.fault_rate_pct | default(0.094) }}%</strong></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">UNKNOWN / UNRESOLVED</span>
+                <div class="stat-icon-wrap stat-icon-amber">
+                    <i data-lucide="help-circle"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(fault.unknown_count | default(281)) }}</div>
+            <div class="stat-sub">Preserved without biased labeling</div>
+        </div>
+    </div>
+
+    <!-- METHODOLOGY FLOWCHART & DISTRIBUTION CHART -->
+    <div class="dashboard-row">
+        <!-- Flowchart Card (from PPT Slide 9) -->
+        <div class="card card-half">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="git-merge" class="card-icon text-cyan"></i>
+                    <div>
+                        <h3 class="card-title">Fault Classification Mapping Logic</h3>
+                        <p class="card-desc">Architecture described in Project Slide 9</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="flowchart-box">
+                    <div class="flow-root">
+                        <span class="flow-pill flow-blue"><i data-lucide="database"></i> Ended By (Event Outcome)</span>
+                    </div>
+                    <div class="flow-split">
+                        <div class="flow-branch branch-normal">
+                            <div class="branch-line"></div>
+                            <div class="branch-card">
+                                <div class="branch-badge text-emerald"><i data-lucide="check"></i> Normal Termination</div>
+                                <p class="branch-desc">Plug Out at Vehicle, Customer, CPS Server, Plug Out at Station, Holster Plugin</p>
+                                <div class="branch-label label-success">FAULT = 0 (NORMAL)</div>
+                            </div>
+                        </div>
+                        <div class="flow-branch branch-abnormal">
+                            <div class="branch-line"></div>
+                            <div class="branch-card">
+                                <div class="branch-badge text-rose"><i data-lucide="alert-triangle"></i> Abnormal Event</div>
+                                <p class="branch-desc">Outlet Unreachable, Station Offline, GFCI Tripped, Relay Stuck Closed, Reboot</p>
+                                <div class="branch-label label-danger">FAULT = 1 (ABNORMAL)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="top-fault-stations-list">
+                    <h4 class="sub-heading"><i data-lucide="map-pin"></i> Top Stations with Abnormal Events:</h4>
+                    <div class="fault-station-grid">
+                        {% for station, count in fault.top_fault_stations.items() %}
+                        <div class="fault-station-badge">
+                            <span class="station-name">{{ station }}</span>
+                            <span class="fault-badge-count">{{ count }} faults</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribution Chart -->
+        <div class="card card-half">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="bar-chart-2" class="card-icon text-purple"></i>
+                    <div>
+                        <h3 class="card-title">Termination Outcomes Distribution</h3>
+                        <p class="card-desc">Log-scale breakdown of session endings</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <img src="/static/images/fault_distribution.png" alt="Fault Outcomes Distribution" class="dashboard-img">
+                </div>
+                <div class="ended-by-table-wrapper">
+                    <table class="table-compact">
+                        <thead>
+                            <tr>
+                                <th>Termination Reason</th>
+                                <th>Count</th>
+                                <th>Classification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reason, count in fault.ended_by_breakdown.items() %}
+                            <tr>
+                                <td><code>{{ reason }}</code></td>
+                                <td>{{ "{:,}".format(count) }}</td>
+                                <td>
+                                    {% if reason in ["Outlet Unreachable", "Door Open", "Plug Removed While Rebooting", "Final GFCI Tripped", "Door", "Final 4-strikes GFCI trip", "Station Offline", "OCD", "Relay Stuck Closed"] %}
+                                    <span class="badge badge-fault">Abnormal (1)</span>
+                                    {% elif reason in ["Plug Out at Vehicle", "Customer", "CPS Server", "Plug Out at Station", "Holster Plugin", "Door Closed"] %}
+                                    <span class="badge badge-normal">Normal (0)</span>
+                                    {% else %}
+                                    <span class="badge badge-unknown">Unknown</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ABNORMAL EVENTS TABLE WITH SEARCH & FILTER -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <i data-lucide="table" class="card-icon text-rose"></i>
+                <div>
+                    <h3 class="card-title">Flagged Abnormal Charging Sessions (Proxy Faults)</h3>
+                    <p class="card-desc">Inspecting verified abnormal events across stations</p>
+                </div>
+            </div>
+            <div class="filter-controls">
+                <input type="text" id="filter-station-input" placeholder="Filter by station name..." class="filter-input">
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table" id="fault-table">
+                    <thead>
+                        <tr>
+                            <th>Station Name</th>
+                            <th>City</th>
+                            <th>Start Timestamp</th>
+                            <th>End Timestamp</th>
+                            <th>Energy (kWh)</th>
+                            <th>Ended By Reason</th>
+                            <th>Fault Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in fault.abnormal_samples | default([]) %}
+                        <tr class="fault-row">
+                            <td class="font-bold">{{ item['Station Name'] }}</td>
+                            <td>{{ item['City'] }}</td>
+                            <td><code>{{ item['StartDateStr'] }}</code></td>
+                            <td><code>{{ item['EndDateStr'] }}</code></td>
+                            <td>{{ "{:,.2f}".format(item['Energy (kWh)']) }}</td>
+                            <td><span class="badge-fault-reason">{{ item['Ended By'] }}</span></td>
+                            <td><span class="badge badge-fault">ABNORMAL (1)</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

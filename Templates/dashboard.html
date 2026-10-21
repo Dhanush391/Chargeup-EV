@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- HERO HEADER -->
+    <div class="hero-card">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i data-lucide="zap" class="hero-badge-icon"></i> AI-POWERED EV CHARGING OPERATIONS
+            </div>
+            <h1 class="hero-title">CHARGEUP Intelligence Dashboard</h1>
+            <p class="hero-desc">
+                Real-time next-hour demand forecasting, proxy fault-event detection, and usage-based station segmentation powered by <strong>ChargePoint CY20Q4</strong> dataset (259k+ sessions across 47 stations).
+            </p>
+            <div class="hero-meta">
+                <span class="meta-item"><i data-lucide="users"></i> Presented by: <strong>Vaishnavi, Dhanush, Hemanth</strong></span>
+                <span class="meta-item"><i data-lucide="calendar"></i> Dataset Scope: <strong>2011 &ndash; 2020 (CY20Q4)</strong></span>
+                <span class="meta-item"><i data-lucide="server"></i> Engine: <strong>FastAPI + XGBoost + Scikit-Learn</strong></span>
+            </div>
+        </div>
+        <div class="hero-actions">
+            <a href="/forecast" class="btn btn-hero-primary">
+                <i data-lucide="trending-up"></i> Live Demand Forecast
+            </a>
+            <a href="/fault-detection" class="btn btn-hero-secondary">
+                <i data-lucide="shield-alert"></i> Inspect Fault Events
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI STATS CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">TOTAL CHARGING SESSIONS</span>
+                <div class="stat-icon-wrap stat-icon-blue">
+                    <i data-lucide="battery-charging"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(stats.total_sessions | default(259410)) }}</div>
+            <div class="stat-sub">Valid sessions analyzed across network</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">CHARGING STATIONS & UPTIME</span>
+                <div class="stat-icon-wrap stat-icon-emerald">
+                    <i data-lucide="map-pin"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ stats.station_count | default(47) }} <span class="stat-unit" style="color: #059669; font-weight: 700; font-size: 13px;">(99.91% Uptime)</span></div>
+            <div class="stat-sub">47 Physical EVSE Chargers Across Network</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">TOTAL ENERGY DELIVERED</span>
+                <div class="stat-icon-wrap stat-icon-cyan">
+                    <i data-lucide="activity"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,.1f}".format(stats.total_energy_network_kwh | default(2216479.1)) }} <span class="stat-unit">kWh</span></div>
+            <div class="stat-sub">~2.22 GWh cumulative consumption</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">FORECAST ACCURACY (R²)</span>
+                <div class="stat-icon-wrap stat-icon-purple">
+                    <i data-lucide="target"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ forecasting.metrics.r2 | default(0.5738) }}</div>
+            <div class="stat-sub">Held-out test R² • MAE: {{ forecasting.metrics.mae | default(19.08) }} kWh</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">ABNORMAL FAULT EVENTS</span>
+                <div class="stat-icon-wrap stat-icon-rose">
+                    <i data-lucide="alert-octagon"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(fault.abnormal_count | default(244)) }}</div>
+            <div class="stat-sub">Fault Rate: {{ fault.fault_rate_pct | default(0.094) }}% (Proxy indicator)</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">HOURLY TIME STEPS</span>
+                <div class="stat-icon-wrap stat-icon-amber">
+                    <i data-lucide="clock"></i>
+                </div>
+            </div>
+            <div class="stat-value">{{ "{:,}".format(stats.hourly_records_count | default(82606)) }}</div>
+            <div class="stat-sub">Continuous hourly grid without leakage</div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTENT GRIDS -->
+    <div class="dashboard-row">
+        <!-- Demand Forecast Visual Preview -->
+        <div class="card card-wide">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="trending-up" class="card-icon"></i>
+                    <div>
+                        <h3 class="card-title">Next-Hour EV Demand Forecasting (XGBoost Regressor)</h3>
+                        <p class="card-desc">Actual vs Predicted demand on chronological held-out test series (7-day window)</p>
+                    </div>
+                </div>
+                <a href="/forecast" class="btn btn-sm btn-outline">Full Forecast Workbench <i data-lucide="arrow-right"></i></a>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <img src="/static/images/demand_actual_vs_pred.png" alt="XGBoost Actual vs Predicted Forecast" class="dashboard-img">
+                </div>
+                <div class="metrics-strip">
+                    <div class="metric-pill">
+                        <span class="pill-title">MAE</span>
+                        <span class="pill-val">{{ forecasting.metrics.mae | default(19.08) }} kWh</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">RMSE</span>
+                        <span class="pill-val">{{ forecasting.metrics.rmse | default(29.94) }} kWh</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">R² Score</span>
+                        <span class="pill-val">{{ forecasting.metrics.r2 | default(0.5738) }}</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Test Split</span>
+                        <span class="pill-val">20% Chronological (16,522 hrs)</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Primary Driver</span>
+                        <span class="pill-val">Prev-Day Demand (57.3%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Architecture & Quick Tester -->
+        <div class="card card-side">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="sparkles" class="card-icon text-emerald"></i>
+                    <div>
+                        <h3 class="card-title">Quick Demand Calculator</h3>
+                        <p class="card-desc">Instant inference via FastAPI POST /predict</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="quick-predict-form" class="quick-form">
+                    <div class="form-group-compact">
+                        <label>Hour of Day (0-23)</label>
+                        <input type="number" id="quick-hour" min="0" max="23" value="18" class="form-input-sm">
+                    </div>
+                    <div class="form-group-compact">
+                        <label>Day of Week</label>
+                        <select id="quick-day" class="form-input-sm">
+                            <option value="0" selected>Monday (Weekday)</option>
+                            <option value="1">Tuesday</option>
+                            <option value="2">Wednesday</option>
+                            <option value="3">Thursday</option>
+                            <option value="4">Friday</option>
+                            <option value="5">Saturday (Weekend)</option>
+                            <option value="6">Sunday (Weekend)</option>
+                        </select>
+                    </div>
+                    <div class="form-group-compact">
+                        <label>Prev-Hour Demand (kWh)</label>
+                        <input type="number" id="quick-prev-hour" step="0.1" value="45.5" class="form-input-sm">
+                    </div>
+                    <div class="form-group-compact">
+                        <label>Prev-Day Demand (kWh)</label>
+                        <input type="number" id="quick-prev-day" step="0.1" value="42.0" class="form-input-sm">
+                    </div>
+                    <button type="button" id="btn-quick-predict" class="btn btn-primary btn-block">
+                        <i data-lucide="zap"></i> Calculate Next-Hour Demand
+                    </button>
+                </form>
+
+                <div id="quick-result-box" class="quick-result-card" style="display: none;">
+                    <div class="result-label">Predicted Next-Hour Demand:</div>
+                    <div class="result-number"><span id="quick-pred-val">--</span> <span class="result-unit">kWh</span></div>
+                    <div class="result-badge"><i data-lucide="check-circle"></i> Computed by XGBRegressor</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECOND ROW: FAULT DETECTION & STATION SEGMENTATION -->
+    <div class="dashboard-row">
+        <!-- Fault Detection Section -->
+        <div class="card card-half">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="shield-alert" class="card-icon text-rose"></i>
+                    <div>
+                        <h3 class="card-title">Fault-Event Detection (Ended By Proxy)</h3>
+                        <p class="card-desc">Operational termination outcome breakdown</p>
+                    </div>
+                </div>
+                <a href="/fault-detection" class="btn btn-sm btn-outline">View Events <i data-lucide="arrow-right"></i></a>
+            </div>
+            <div class="card-body">
+                <div class="disclaimer-banner">
+                    <i data-lucide="info" class="banner-icon"></i>
+                    <span><strong>Proxy Limitation:</strong> Operational fault indicator based on session termination codes (e.g. Outlet Unreachable, Station Offline, GFCI trip). Not a hardware sensor fault diagnosis.</span>
+                </div>
+                <div class="chart-wrapper">
+                    <img src="/static/images/fault_distribution.png" alt="Fault Event Breakdown" class="dashboard-img">
+                </div>
+                <div class="fault-stats-summary">
+                    <div class="fault-stat-item normal-pill">
+                        <i data-lucide="check"></i> Normal Sessions: <strong>{{ "{:,}".format(fault.normal_count | default(258885)) }}</strong>
+                    </div>
+                    <div class="fault-stat-item abnormal-pill">
+                        <i data-lucide="alert-triangle"></i> Abnormal Events: <strong>{{ "{:,}".format(fault.abnormal_count | default(244)) }}</strong>
+                    </div>
+                    <div class="fault-stat-item unknown-pill">
+                        <i data-lucide="help-circle"></i> Unknown / NaN: <strong>{{ "{:,}".format(fault.unknown_count | default(281)) }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Station Segmentation K-Means -->
+        <div class="card card-half">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="pie-chart" class="card-icon text-amber"></i>
+                    <div>
+                        <h3 class="card-title">Station Segmentation (K-Means Clustering)</h3>
+                        <p class="card-desc">Grouping 47 stations by Total Sessions & Energy Consumed</p>
+                    </div>
+                </div>
+                <a href="/segmentation" class="btn btn-sm btn-outline">Explore Clusters <i data-lucide="arrow-right"></i></a>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <img src="/static/images/station_cluster_scatter.png" alt="Station Segmentation K-Means" class="dashboard-img">
+                </div>
+                <div class="cluster-cards-row">
+                    {% for profile in segmentation.profiles | default([]) %}
+                    <div class="cluster-summary-mini cluster-tier-{{ profile.cluster_id }}">
+                        <div class="mini-cluster-title">{{ profile.label }}</div>
+                        <div class="mini-cluster-count"><strong>{{ profile.station_count }}</strong> Stations</div>
+                        <div class="mini-cluster-sub">{{ "{:,.0f}".format(profile.total_energy_kwh) }} kWh total</div>
+                        <div class="mini-cluster-sub">Avg {{ profile.avg_kwh_per_session }} kWh/session</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <!-- STATION NETWORK AVAILABILITY & HEALTH STRIP -->
+                <div class="station-availability-strip" style="margin-top: 16px; padding: 12px 16px; background: #f8fafc; border: 1px solid var(--border-color); border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 0.05em; text-transform: uppercase;">Station Availability Overview:</span>
+                        <div style="font-size: 13px; font-weight: 700; color: #0f172a; margin-top: 3px;">
+                            <span style="color: #059669;">● 18 Optimal (100%)</span> &nbsp;|&nbsp;
+                            <span style="color: #0284c7;">● 18 Monitored</span> &nbsp;|&nbsp;
+                            <span style="color: #d97706;">● 11 Inspection Flagged</span>
+                        </div>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 11px; font-weight: 700; color: #64748b;">Overall Availability:</span>
+                        <div style="font-size: 16px; font-weight: 800; color: #059669; font-family: var(--font-sans);">99.91% Uptime</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

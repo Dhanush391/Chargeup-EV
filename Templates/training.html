@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Model Training Architecture</h1>
+            <p class="page-subtitle">Training workflow for XGBoost Regressor and K-Means clustering.</p>
+        </div>
+        <a href="/forecast" class="btn btn-primary"><i data-lucide="play"></i> Go to Live Forecast</a>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="card card-half">
+            <div class="card-header">
+                <h3 class="card-title">XGBRegressor Training Specifications</h3>
+            </div>
+            <div class="card-body">
+                <div class="metrics-strip" style="flex-direction: column;">
+                    <div class="metric-pill">
+                        <span class="pill-title">Estimators</span>
+                        <span class="pill-val">200 Decision Trees</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Learning Rate</span>
+                        <span class="pill-val">0.05</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Max Depth</span>
+                        <span class="pill-val">6</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Subsample & Colsample</span>
+                        <span class="pill-val">0.85 / 0.85</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Artifact Output</span>
+                        <span class="pill-val">Models/xgboost_demand_model.pkl</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-half">
+            <div class="card-header">
+                <h3 class="card-title">K-Means Clustering Specifications</h3>
+            </div>
+            <div class="card-body">
+                <div class="metrics-strip" style="flex-direction: column;">
+                    <div class="metric-pill">
+                        <span class="pill-title">Number of Clusters (k)</span>
+                        <span class="pill-val">3 Clusters (Lower, Medium, Higher)</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Feature Scaler</span>
+                        <span class="pill-val">StandardScaler (zero mean, unit variance)</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Input Features</span>
+                        <span class="pill-val">Total Sessions, Total kWh, Avg kWh/session</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Artifact Output</span>
+                        <span class="pill-val">Models/kmeans_station_model.pkl</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

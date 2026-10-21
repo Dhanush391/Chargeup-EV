@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Supervised Demand Regression (XGBoost)</h1>
+            <p class="page-subtitle">Next-hour load forecasting using Extreme Gradient Boosting regressor.</p>
+        </div>
+        <a href="/forecast" class="btn btn-primary"><i data-lucide="zap"></i> Forecast Workbench</a>
+    </div>
+
+    <div class="dashboard-row">
+        <div class="card card-wide">
+            <div class="card-header">
+                <h3 class="card-title">XGBoost Demand Regression Performance</h3>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <img src="/static/images/demand_actual_vs_pred.png" alt="Actual vs Predicted" class="chart-full">
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-side">
+            <div class="card-header">
+                <h3 class="card-title">Held-Out Test Metrics</h3>
+            </div>
+            <div class="card-body">
+                <div class="metrics-strip" style="flex-direction: column;">
+                    <div class="metric-pill">
+                        <span class="pill-title">MAE (Mean Absolute Error)</span>
+                        <span class="pill-val">19.081 kWh</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">RMSE (Root Mean Squared Error)</span>
+                        <span class="pill-val">29.940 kWh</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">R² (Variance Explained)</span>
+                        <span class="pill-val">0.5738</span>
+                    </div>
+                    <div class="metric-pill">
+                        <span class="pill-title">Chronological Test Split</span>
+                        <span class="pill-val">20% (16,522 hours)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

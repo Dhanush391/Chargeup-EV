@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">About Project CHARGEUP</h1>
+            <p class="page-subtitle">AI-Powered EV Charging Demand Forecast & Fault Detection using ChargePoint Data CY20Q4</p>
+        </div>
+        <div class="model-badge-active">
+            <i data-lucide="award"></i>
+            <span>Engineering Capstone Presentation</span>
+        </div>
+    </div>
+
+    <!-- TEAM CARDS -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i data-lucide="users"></i> Project Presenters & Engineering Team</h3>
+        </div>
+        <div class="card-body">
+            <div class="team-grid">
+                <div class="team-card">
+                    <div class="team-avatar avatar-purple">V</div>
+                    <div class="team-name">Vaishnavi</div>
+                    <div class="team-role">Machine Learning & Modeling Lead</div>
+                    <div class="team-desc">Supervised XGBoost demand forecasting & hyperparameter validation.</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar avatar-emerald">D</div>
+                    <div class="team-name">Dhanush</div>
+                    <div class="team-role">Full-Stack Architecture & FastAPI Lead</div>
+                    <div class="team-desc">FastAPI backend services, schema validation & dashboard integration.</div>
+                </div>
+                <div class="team-card">
+                    <div class="team-avatar avatar-cyan">H</div>
+                    <div class="team-name">Hemanth</div>
+                    <div class="team-role">Data Pipeline & Unsupervised Lead</div>
+                    <div class="team-desc">K-Means station segmentation & proxy fault-event classification.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROPOSED SOLUTION & ARCHITECTURE (FROM PPT SLIDE 4) -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i data-lucide="workflow"></i> End-to-End System Workflow (Proposed Solution)</h3>
+        </div>
+        <div class="card-body">
+            <div class="workflow-diagram-container">
+                <div class="workflow-box">
+                    <div class="wf-step wf-input">
+                        <span class="wf-tag">INPUT</span>
+                        <div class="wf-title">Charging Data</div>
+                        <div class="wf-desc">ChargePoint CY20Q4 (259k sessions)</div>
+                    </div>
+                    <div class="wf-arrow"><i data-lucide="arrow-right"></i></div>
+                    
+                    <div class="wf-step">
+                        <span class="wf-tag">1. PREPROCESS</span>
+                        <div class="wf-title">Data Preprocessing</div>
+                        <div class="wf-desc">Timestamps, nulls, energy cleaning</div>
+                    </div>
+                    <div class="wf-arrow"><i data-lucide="arrow-right"></i></div>
+
+                    <div class="wf-step">
+                        <span class="wf-tag">2. ENGINEER</span>
+                        <div class="wf-title">Feature Engineering</div>
+                        <div class="wf-desc">Hour, lags (t-1, t-24), weekend flag</div>
+                    </div>
+                    <div class="wf-arrow"><i data-lucide="arrow-right"></i></div>
+
+                    <div class="wf-step wf-analyze">
+                        <span class="wf-tag">3. ANALYZE</span>
+                        <div class="wf-core-grid">
+                            <span class="core-sub-pill text-emerald">XGBoost Demand</span>
+                            <span class="core-sub-pill text-rose">Fault Detection</span>
+                            <span class="core-sub-pill text-amber">K-Means Clusters</span>
+                        </div>
+                    </div>
+                    <div class="wf-arrow"><i data-lucide="arrow-right"></i></div>
+
+                    <div class="wf-step wf-output">
+                        <span class="wf-tag">4. OUTPUT</span>
+                        <div class="wf-title">FastAPI Deployment</div>
+                        <div class="wf-desc">REST API & Live Web UI</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROBLEM STATEMENT & OBJECTIVES (FROM PPT SLIDE 3) -->
+    <div class="dashboard-row">
+        <div class="card card-half">
+            <div class="card-header">
+                <h3 class="card-title"><i data-lucide="help-circle"></i> The Problem Statement</h3>
+            </div>
+            <div class="card-body">
+                <ul class="styled-list">
+                    <li><strong>Rapid EV Adoption:</strong> Electric vehicle adoption is accelerating rapidly, creating fluctuating and unmanaged grid loads.</li>
+                    <li><strong>Capacity Imbalances:</strong> Some public stations experience severe peak congestion while others remain chronically underutilized.</li>
+                    <li><strong>Silent Station Faults:</strong> Unresolved station disruptions (offline chargers, GFCI trips) leave drivers stranded and damage operator trust.</li>
+                    <li><strong>Lack of Real-Time Forecasting:</strong> Operators lack granular next-hour load forecasts to procure clean energy and plan storage dispatch.</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card card-half">
+            <div class="card-header">
+                <h3 class="card-title"><i data-lucide="compass"></i> Future Scope & Extensions (Slide 11)</h3>
+            </div>
+            <div class="card-body">
+                <ul class="styled-list">
+                    <li><strong>Weather & Grid Telemetry:</strong> Integrate real-time ambient temperature and solar irradiation API streams to refine seasonal forecasting.</li>
+                    <li><strong>Hardware Fault Sensors:</strong> Augment proxy 'Ended By' indicators with direct IoT hardware sensor telemetry and OCPP error messages.</li>
+                    <li><strong>Automated Retraining:</strong> Continuous MLOps pipeline on cloud platforms (AWS / GCP) with automated model registry versioning.</li>
+                    <li><strong>Vehicle-to-Grid (V2G):</strong> Bidirectional dispatch recommendations based on predicted regional grid peak hours.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

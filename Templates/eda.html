@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Grid Exploratory Data Analysis & Analytics</h1>
+            <p class="page-subtitle">Temporal patterns, peak load distributions, and infrastructure consumption profiles from 259,410 charging sessions.</p>
+        </div>
+        <div class="model-badge-active">
+            <i data-lucide="bar-chart-2"></i>
+            <span>Network EDA Insights</span>
+        </div>
+    </div>
+
+    <!-- SUMMARY CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">NETWORK PEAK DEMAND HOUR</span>
+                <div class="stat-icon-wrap stat-icon-rose">
+                    <i data-lucide="clock"></i>
+                </div>
+            </div>
+            <div class="stat-value">10:00 &ndash; 11:00 AM</div>
+            <div class="stat-sub">Morning workplace arrival peak</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">EVENING RUSH LOAD</span>
+                <div class="stat-icon-wrap stat-icon-amber">
+                    <i data-lucide="sun"></i>
+                </div>
+            </div>
+            <div class="stat-value">17:00 &ndash; 19:00</div>
+            <div class="stat-sub">Secondary evening commute charging</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">LOWEST OFF-PEAK TROUGH</span>
+                <div class="stat-icon-wrap stat-icon-blue">
+                    <i data-lucide="moon"></i>
+                </div>
+            </div>
+            <div class="stat-value">02:00 &ndash; 04:00 AM</div>
+            <div class="stat-sub">Minimal public charger utilization</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">AVERAGE SESSION ENERGY</span>
+                <div class="stat-icon-wrap stat-icon-emerald">
+                    <i data-lucide="battery-charging"></i>
+                </div>
+            </div>
+            <div class="stat-value">8.54 <span class="stat-unit">kWh</span></div>
+            <div class="stat-sub">Typical Level 2 public recharge</div>
+        </div>
+    </div>
+
+    <!-- EDA CHARTS -->
+    <div class="dashboard-row">
+        <!-- 24-Hour Load Profile -->
+        <div class="card card-half">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="clock" class="card-icon text-cyan"></i>
+                    <div>
+                        <h3 class="card-title">24-Hour Network Load Profile</h3>
+                        <p class="card-desc">Average aggregate demand across the 24 hours of the day</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <img src="/static/images/hourly_demand_profile.png" alt="24 Hour Demand Profile" class="dashboard-img">
+                </div>
+                <div class="card-explanation">
+                    <p><strong>Grid Observation:</strong> EV drivers plug in immediately upon arriving at work between 08:00 and 10:00 AM, causing a sharp demand peak (~45-55 kWh aggregate network draw). Demand gradually tapers in the afternoon and drops significantly after 22:00.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top 10 Energy Stations -->
+        <div class="card card-half">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="award" class="card-icon text-purple"></i>
+                    <div>
+                        <h3 class="card-title">Top 10 Charging Stations by Energy Consumed</h3>
+                        <p class="card-desc">Heaviest utilized chargers in the ChargePoint network</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-wrapper">
+                    <img src="/static/images/station_usage_ranking.png" alt="Top Stations Energy" class="dashboard-img">
+                </div>
+                <div class="card-explanation">
+                    <p><strong>Infrastructure Observation:</strong> Top hubs like <code>CAMBRIDGE #1</code>, <code>BRYANT #2</code>, and <code>HAMILTON #1</code> deliver the majority of total network kWh, identifying them as priority locations for transformer upgrades and fast-charging expansion.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADDITIONAL EDA GRID -->
+    <div class="dashboard-row">
+        <div class="card card-half">
+            <div class="card-header">
+                <h3 class="card-title"><i data-lucide="sliders"></i> Temporal & Seasonal Demand Patterns</h3>
+            </div>
+            <div class="card-body">
+                <div class="eda-bullet-list">
+                    <div class="eda-bullet-item">
+                        <i data-lucide="calendar" class="bullet-icon text-blue"></i>
+                        <div>
+                            <strong>Weekday vs Weekend Disparity:</strong>
+                            <p>Weekday energy demand is significantly higher than weekend demand (over 2.4x higher on average), reflecting commuter charging patterns at commercial and municipal locations.</p>
+                        </div>
+                    </div>
+                    <div class="eda-bullet-item">
+                        <i data-lucide="trending-up" class="bullet-icon text-emerald"></i>
+                        <div>
+                            <strong>Year-over-Year Growth:</strong>
+                            <p>Charging sessions show steady acceleration from 2011 to 2020, mirroring the exponential growth of electric vehicle registrations in California.</p>
+                        </div>
+                    </div>
+                    <div class="eda-bullet-item">
+                        <i data-lucide="activity" class="bullet-icon text-amber"></i>
+                        <div>
+                            <strong>Lag Autocorrelation:</strong>
+                            <p>Previous-day same-hour demand exhibits a 57.3% feature importance gain, confirming strong 24-hour cyclicality in human charging behavior.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card card-half">
+            <div class="card-header">
+                <h3 class="card-title"><i data-lucide="check-square"></i> Operational Recommendations</h3>
+            </div>
+            <div class="card-body">
+                <div class="eda-bullet-list">
+                    <div class="eda-bullet-item">
+                        <i data-lucide="zap" class="bullet-icon text-purple"></i>
+                        <div>
+                            <strong>Dynamic Pricing Strategy:</strong>
+                            <p>Implement off-peak time-of-use tariffs between 22:00 and 06:00 to encourage overnight charging and relieve the 10:00 AM grid spike.</p>
+                        </div>
+                    </div>
+                    <div class="eda-bullet-item">
+                        <i data-lucide="shield" class="bullet-icon text-rose"></i>
+                        <div>
+                            <strong>Proactive Maintenance Scheduling:</strong>
+                            <p>Stations in the 'Higher Usage' cluster should undergo quarterly preventative maintenance rather than annual checks to prevent premature relay wear and GFCI ground faults.</p>
+                        </div>
+                    </div>
+                    <div class="eda-bullet-item">
+                        <i data-lucide="cpu" class="bullet-icon text-cyan"></i>
+                        <div>
+                            <strong>Transformer Sizing & Storage:</strong>
+                            <p>Co-locating battery energy storage systems (BESS) at the top 5 stations can buffer peak hour draws without requiring expensive substation reinforcements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

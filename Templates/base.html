@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHARGEUP | AI-Powered EV Charging Demand Forecast & Fault Detection</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/index.css">
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <!-- Brand Logo -->
+            <div class="sidebar-brand">
+                <div class="brand-icon-wrapper">
+                    <i data-lucide="zap" class="brand-icon"></i>
+                </div>
+                <div class="brand-details">
+                    <span class="brand-title">CHARGEUP</span>
+                    <span class="brand-subtitle">AI EV DEMAND & FAULT SUITE</span>
+                </div>
+            </div>
+
+            <!-- Navigation Menu -->
+            <nav class="sidebar-menu">
+                <div class="menu-category">INTELLIGENCE PLATFORM</div>
+                
+                <a href="/" class="menu-item {% if active_page == 'dashboard' %}active{% endif %}">
+                    <i data-lucide="layout-dashboard" class="item-icon"></i>
+                    <span class="item-text">Overview Dashboard</span>
+                </a>
+                
+                <a href="/forecast" class="menu-item {% if active_page == 'forecast' %}active{% endif %}">
+                    <i data-lucide="trending-up" class="item-icon"></i>
+                    <span class="item-text">Demand Forecasting</span>
+                    <span class="badge badge-xgb">XGBoost</span>
+                </a>
+                
+                <a href="/fault-detection" class="menu-item {% if active_page == 'fault_detection' %}active{% endif %}">
+                    <i data-lucide="shield-alert" class="item-icon"></i>
+                    <span class="item-text">Fault Event Detection</span>
+                    <span class="badge badge-fault">Ended By</span>
+                </a>
+
+                <a href="/segmentation" class="menu-item {% if active_page == 'segmentation' %}active{% endif %}">
+                    <i data-lucide="pie-chart" class="item-icon"></i>
+                    <span class="item-text">Station Segmentation</span>
+                    <span class="badge badge-km">K-Means</span>
+                </a>
+                
+                <a href="/eda" class="menu-item {% if active_page == 'eda' %}active{% endif %}">
+                    <i data-lucide="bar-chart-3" class="item-icon"></i>
+                    <span class="item-text">Grid EDA & Analytics</span>
+                </a>
+
+                <div class="menu-category">DATA & DEPLOYMENT</div>
+                
+                <a href="/dataset-docs" class="menu-item {% if active_page == 'dataset_docs' %}active{% endif %}">
+                    <i data-lucide="database" class="item-icon"></i>
+                    <span class="item-text">ChargePoint CY20Q4</span>
+                    <span class="badge badge-docs">259k+</span>
+                </a>
+
+                <a href="/docs" target="_blank" class="menu-item">
+                    <i data-lucide="code-2" class="item-icon"></i>
+                    <span class="item-text">FastAPI Swagger UI</span>
+                    <span class="badge badge-api">REST</span>
+                </a>
+
+                <a href="/about" class="menu-item {% if active_page == 'about' %}active{% endif %}">
+                    <i data-lucide="info" class="item-icon"></i>
+                    <span class="item-text">Project & Team</span>
+                </a>
+
+                <a href="/contact" class="menu-item {% if active_page == 'contact' %}active{% endif %}">
+                    <i data-lucide="users" class="item-icon"></i>
+                    <span class="item-text">Contact & Credits</span>
+                </a>
+            </nav>
+
+            <!-- Bottom System Status Card -->
+            <div class="sidebar-footer">
+                <div class="status-indicator-box">
+                    <div class="status-dot-pulse"></div>
+                    <div>
+                        <div class="status-text-title">FastAPI Service Active</div>
+                        <div class="status-text-sub">Models Ready • 47 Stations</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT AREA -->
+        <main class="main-content">
+            <!-- Top Workspace Header -->
+            <header class="workspace-header">
+                <div class="header-left">
+                    <div class="header-breadcrumb">
+                        <i data-lucide="cpu" class="breadcrumb-icon"></i>
+                        <span class="breadcrumb-root">CHARGEUP</span>
+                        <span class="breadcrumb-separator">/</span>
+                        <span class="breadcrumb-current">{{ active_page | replace('_', ' ') | title }}</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="api-health-pill">
+                        <span class="health-dot"></span>
+                        <span>API Status: 200 OK</span>
+                    </div>
+                    <a href="/forecast" class="header-btn-action">
+                        <i data-lucide="play" class="btn-icon-sm"></i> Run Forecast
+                    </a>
+                    <a href="/docs" target="_blank" class="header-btn-api">
+                        <i data-lucide="file-json" class="btn-icon-sm"></i> API Docs
+                    </a>
+                </div>
+            </header>
+
+            <!-- Content Body -->
+            <div class="content-body">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+    <script src="/static/app.js"></script>
+</body>
+</html>

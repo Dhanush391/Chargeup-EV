@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Next-Hour EV Demand Forecasting</h1>
+            <p class="page-subtitle">Supervised regression using XGBoost Regressor trained on chronological ChargePoint CY20Q4 hourly demand.</p>
+        </div>
+        <div class="model-badge-active">
+            <span class="badge-dot"></span>
+            <span>Active Model: <strong>XGBRegressor (200 trees, lr=0.05)</strong></span>
+        </div>
+    </div>
+
+    <!-- PRESET BUTTONS -->
+    <div class="card preset-card">
+        <div class="preset-label"><i data-lucide="sliders"></i> Quick Test Scenarios:</div>
+        <div class="preset-buttons">
+            <button type="button" class="btn btn-preset active" data-preset="weekday_peak">
+                <i data-lucide="zap"></i> Monday Rush Hour (18:00)
+            </button>
+            <button type="button" class="btn btn-preset" data-preset="weekday_morning">
+                <i data-lucide="sun"></i> Wednesday Commute (08:00)
+            </button>
+            <button type="button" class="btn btn-preset" data-preset="weekend_afternoon">
+                <i data-lucide="coffee"></i> Saturday Afternoon (14:00)
+            </button>
+            <button type="button" class="btn btn-preset" data-preset="night_low">
+                <i data-lucide="moon"></i> Late Night Off-Peak (03:00)
+            </button>
+        </div>
+    </div>
+
+    <!-- WORKBENCH GRID -->
+    <div class="forecast-grid">
+        <!-- INPUT FORM -->
+        <div class="card forecast-form-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="calculator" class="card-icon text-cyan"></i>
+                    <div>
+                        <h3 class="card-title">Prediction Input Parameters</h3>
+                        <p class="card-desc">Validated via Pydantic model on FastAPI endpoint</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form id="forecast-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-hour">Hour of Day (0 &ndash; 23)</label>
+                            <input type="number" id="input-hour" name="hour" min="0" max="23" value="18" required class="form-control">
+                            <span class="input-hint">Hour for which next-step demand is forecasted</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-day">Day of Week</label>
+                            <select id="input-day" name="day_of_week" class="form-control">
+                                <option value="0" selected>0 - Monday</option>
+                                <option value="1">1 - Tuesday</option>
+                                <option value="2">2 - Wednesday</option>
+                                <option value="3">3 - Thursday</option>
+                                <option value="4">4 - Friday</option>
+                                <option value="5">5 - Saturday</option>
+                                <option value="6">6 - Sunday</option>
+                            </select>
+                            <span class="input-hint">0=Monday, 6=Sunday</span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-month">Month (1 &ndash; 12)</label>
+                            <select id="input-month" name="month" class="form-control">
+                                <option value="1">January (1)</option>
+                                <option value="2">February (2)</option>
+                                <option value="3">March (3)</option>
+                                <option value="4">April (4)</option>
+                                <option value="5">May (5)</option>
+                                <option value="6">June (6)</option>
+                                <option value="7">July (7)</option>
+                                <option value="8">August (8)</option>
+                                <option value="9">September (9)</option>
+                                <option value="10" selected>October (10)</option>
+                                <option value="11">November (11)</option>
+                                <option value="12">December (12)</option>
+                            </select>
+                            <span class="input-hint">Seasonal demand variation</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-weekend">Weekend Indicator</label>
+                            <select id="input-weekend" name="is_weekend" class="form-control">
+                                <option value="0" selected>0 - Weekday (Mon-Fri)</option>
+                                <option value="1">1 - Weekend (Sat-Sun)</option>
+                            </select>
+                            <span class="input-hint">Binary flag (1 = Weekend)</span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="input-prev-hour">Previous-Hour Demand (kWh)</label>
+                            <input type="number" id="input-prev-hour" name="prev_hour_demand" step="0.1" min="0" value="45.5" required class="form-control">
+                            <span class="input-hint">Network energy delivered at t-1</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="input-prev-day">Previous-Day Demand (kWh, Lag 24h)</label>
+                            <input type="number" id="input-prev-day" name="prev_day_demand" step="0.1" min="0" value="42.0" required class="form-control">
+                            <span class="input-hint">Network energy delivered 24h prior (t-24)</span>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" id="btn-submit-forecast" class="btn btn-primary btn-lg">
+                            <i data-lucide="play"></i> Predict Next-Hour Demand
+                        </button>
+                        <button type="button" id="btn-reset-form" class="btn btn-secondary">
+                            <i data-lucide="rotate-ccw"></i> Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- PREDICTION RESULT DISPLAY -->
+        <div class="card forecast-result-card">
+            <div class="card-header">
+                <div class="card-header-left">
+                    <i data-lucide="target" class="card-icon text-emerald"></i>
+                    <div>
+                        <h3 class="card-title">Live Model Prediction</h3>
+                        <p class="card-desc">Output delivered from FastAPI backend</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body result-body">
+                <div class="result-display-panel">
+                    <div class="result-badge-top">NEXT-HOUR FORECAST</div>
+                    <div class="result-value-hero">
+                        <span id="forecast-output-val">46.82</span>
+                        <span class="result-unit-hero">kWh</span>
+                    </div>
+                    <div id="demand-level-pill" class="level-pill level-high">
+                        <i data-lucide="zap"></i> High Demand Period
+                    </div>
+
+                    <div class="result-breakdown-list">
+                        <div class="breakdown-row">
+                            <span>Service Endpoint</span>
+                            <span class="breakdown-val"><code>POST /predict</code></span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Model Architecture</span>
+                            <span class="breakdown-val">XGBRegressor (Extreme Gradient Boosting)</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Inference Latency</span>
+                            <span class="breakdown-val">&lt; 15 ms</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Test Set MAE</span>
+                            <span class="breakdown-val">19.08 kWh</span>
+                        </div>
+                        <div class="breakdown-row">
+                            <span>Test Set R²</span>
+                            <span class="breakdown-val">0.5738</span>
+                        </div>
+                    </div>
+
+                    <div class="api-debug-box">
+                        <div class="debug-title"><i data-lucide="code"></i> Live API Response JSON:</div>
+                        <pre id="api-response-json">{
+  "status": "success",
+  "predicted_demand_kwh": 46.82,
+  "units": "kWh",
+  "model_used": "XGBoost Regressor (XGBRegressor)"
+}</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODEL EVALUATION SECTION (FROM PPT SLIDE 7 & 8) -->
+    <div class="evaluation-section">
+        <h2 class="section-title"><i data-lucide="award"></i> XGBoost Model Evaluation & Performance</h2>
+        <p class="section-desc">Evaluated on 16,522 held-out chronological test hours (20% split) from ChargePoint CY20Q4.</p>
+
+        <!-- Metrics Cards -->
+        <div class="metrics-row">
+            <div class="eval-card">
+                <div class="eval-metric-title">MAE (Mean Absolute Error)</div>
+                <div class="eval-metric-number">{{ metrics.mae | default(19.081) }} <span class="eval-unit">kWh</span></div>
+                <div class="eval-metric-desc">Average absolute error across all test predictions (lower is better).</div>
+            </div>
+            <div class="eval-card">
+                <div class="eval-metric-title">RMSE (Root Mean Squared Error)</div>
+                <div class="eval-metric-number">{{ metrics.rmse | default(29.94) }} <span class="eval-unit">kWh</span></div>
+                <div class="eval-metric-desc">Penalizes large errors more heavily during sudden load spikes.</div>
+            </div>
+            <div class="eval-card">
+                <div class="eval-metric-title">R² (Coefficient of Determination)</div>
+                <div class="eval-metric-number">{{ metrics.r2 | default(0.5738) }}</div>
+                <div class="eval-metric-desc">Proportion of variance in charging demand explained by features.</div>
+            </div>
+        </div>
+
+        <!-- Evaluation Charts -->
+        <div class="charts-double-row">
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3 class="card-title">Actual vs. Predicted Demand (Held-Out Test Window)</h3>
+                    <span class="badge badge-docs">168-Hour Window</span>
+                </div>
+                <div class="card-body">
+                    <img src="/static/images/demand_actual_vs_pred.png" alt="Actual vs Predicted Demand" class="chart-full">
+                </div>
+            </div>
+
+            <div class="card chart-card">
+                <div class="card-header">
+                    <h3 class="card-title">XGBoost Feature Importance Ranking</h3>
+                    <span class="badge badge-xgb">Gain Score</span>
+                </div>
+                <div class="card-body">
+                    <img src="/static/images/feature_importance.png" alt="Feature Importance" class="chart-full">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

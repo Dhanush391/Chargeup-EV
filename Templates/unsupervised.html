@@ -1,0 +1,238 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <!-- PAGE TITLE -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Station Segmentation using K-Means Clustering</h1>
+            <p class="page-subtitle">Unsupervised clustering of all 47 charging stations based on Total Sessions, Total Energy (kWh), and Average Energy per Session.</p>
+        </div>
+        <div class="model-badge-active">
+            <span class="badge-dot badge-dot-km"></span>
+            <span>Unsupervised Model: <strong>K-Means (k=3, StandardScaler)</strong></span>
+        </div>
+    </div>
+
+    <!-- METHODOLOGY EXPLANATION (FROM PPT SLIDE 10) -->
+    <div class="card bg-slate-subtle">
+        <div class="card-body">
+            <div class="unsupervised-explainer">
+                <div class="explainer-icon"><i data-lucide="network"></i></div>
+                <div>
+                    <h3 class="explainer-title">Unsupervised Behavioral Clustering</h3>
+                    <p class="explainer-p">
+                        K-Means discovers natural groupings across physical charging infrastructure without requiring prior labels. By standardizing features with <code>StandardScaler</code>, stations are grouped into three distinct capacity planning tiers: <strong>Lower Usage</strong>, <strong>Medium Usage</strong>, and <strong>Higher Usage</strong>.
+                    </p>
+                </div>
+            </div>
+            <!-- Process steps -->
+            <div class="pipeline-steps">
+                <div class="step-card">
+                    <span class="step-num">1</span>
+                    <span class="step-title">Station Statistics</span>
+                    <span class="step-sub">Sessions, kWh, Avg kWh</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card">
+                    <span class="step-num">2</span>
+                    <span class="step-title">StandardScaler</span>
+                    <span class="step-sub">Zero mean, unit variance</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card">
+                    <span class="step-num">3</span>
+                    <span class="step-title">K-Means (k=3)</span>
+                    <span class="step-sub">Euclidean distance clustering</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card step-highlight">
+                    <span class="step-num">4</span>
+                    <span class="step-title">Station Clusters</span>
+                    <span class="step-sub">Lower, Medium, Higher Usage</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATION NETWORK AVAILABILITY & HEALTH OVERVIEW -->
+    <div class="stats-grid" style="margin-top: 10px;">
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">TOTAL CHARGING STATIONS</span>
+                <div class="stat-icon-wrap stat-icon-blue"><i data-lucide="map-pin"></i></div>
+            </div>
+            <div class="stat-value">47</div>
+            <div class="stat-sub">100% physically cataloged chargers</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">NETWORK AVAILABILITY RATE</span>
+                <div class="stat-icon-wrap stat-icon-emerald"><i data-lucide="shield-check"></i></div>
+            </div>
+            <div class="stat-value text-emerald">99.91%</div>
+            <div class="stat-sub">Session completion success rate</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">OPTIMAL (100% HEALTHY)</span>
+                <div class="stat-icon-wrap stat-icon-cyan"><i data-lucide="check-circle"></i></div>
+            </div>
+            <div class="stat-value">18 Stations</div>
+            <div class="stat-sub">Zero proxy fault events detected</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">MONITORED CHARGERS</span>
+                <div class="stat-icon-wrap stat-icon-amber"><i data-lucide="activity"></i></div>
+            </div>
+            <div class="stat-value">18 Stations</div>
+            <div class="stat-sub">1 to 4 minor proxy events recorded</div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <span class="stat-label">ATTENTION / REPAIR NEEDED</span>
+                <div class="stat-icon-wrap stat-icon-rose"><i data-lucide="alert-triangle"></i></div>
+            </div>
+            <div class="stat-value text-rose">11 Stations</div>
+            <div class="stat-sub">&ge; 5 proxy outages/GFCI flags</div>
+        </div>
+    </div>
+
+    <!-- CLUSTER STATS CARDS -->
+    <div class="cluster-summary-grid">
+        {% for profile in segmentation.profiles | default([]) %}
+        <div class="cluster-card cluster-card-{{ profile.cluster_id }}">
+            <div class="cluster-card-header">
+                <div>
+                    <span class="cluster-tier-tag">CLUSTER {{ profile.cluster_id }}</span>
+                    <h3 class="cluster-tier-name">{{ profile.label }}</h3>
+                </div>
+                <div class="cluster-station-count">
+                    <strong>{{ profile.station_count }}</strong> Stations
+                </div>
+            </div>
+            <div class="cluster-stats-body">
+                <div class="cluster-metric">
+                    <span class="metric-label">Total Energy Delivered</span>
+                    <span class="metric-value">{{ "{:,.1f}".format(profile.total_energy_kwh) }} <small>kWh</small></span>
+                </div>
+                <div class="cluster-metric">
+                    <span class="metric-label">Avg Energy per Station</span>
+                    <span class="metric-value">{{ "{:,.1f}".format(profile.avg_energy_per_station_kwh) }} <small>kWh</small></span>
+                </div>
+                <div class="cluster-metric">
+                    <span class="metric-label">Avg Sessions per Station</span>
+                    <span class="metric-value">{{ "{:,.1f}".format(profile.avg_sessions_per_station) }}</span>
+                </div>
+                <div class="cluster-metric">
+                    <span class="metric-label">Avg Energy per Session</span>
+                    <span class="metric-value">{{ profile.avg_kwh_per_session }} <small>kWh/session</small></span>
+                </div>
+            </div>
+            <div class="cluster-card-footer">
+                {% if profile.cluster_id == 0 %}
+                <span class="cluster-desc"><i data-lucide="alert-circle"></i> Underutilized infrastructure or localized backup ports.</span>
+                {% elif profile.cluster_id == 1 %}
+                <span class="cluster-desc"><i data-lucide="check-circle"></i> Steady standard community usage throughout the day.</span>
+                {% else %}
+                <span class="cluster-desc"><i data-lucide="zap"></i> Critical commercial/downtown hubs requiring high power allocation.</span>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- VISUAL CLUSTERING SCATTER -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <i data-lucide="scatter-chart" class="card-icon text-cyan"></i>
+                <div>
+                    <h3 class="card-title">K-Means Station Segmentation Map</h3>
+                    <p class="card-desc">Total Sessions vs Total Energy Consumed (bubble size represents average kWh per session)</p>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="chart-wrapper">
+                <img src="/static/images/station_cluster_scatter.png" alt="Station Clusters Scatter Plot" class="dashboard-img">
+            </div>
+        </div>
+    </div>
+
+    <!-- ALL 47 STATIONS COMPLETE TABLE -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-left">
+                <i data-lucide="list" class="card-icon text-purple"></i>
+                <div>
+                    <h3 class="card-title">Complete Station Cluster Roster (47 Stations)</h3>
+                    <p class="card-desc">Detailed usage metrics, availability rates, and assigned operational tier for each charger</p>
+                </div>
+            </div>
+            <div class="filter-controls">
+                <select id="cluster-filter-select" class="filter-input">
+                    <option value="all">All Clusters</option>
+                    <option value="Lower Usage">Lower Usage</option>
+                    <option value="Medium Usage">Medium Usage</option>
+                    <option value="Higher Usage">Higher Usage</option>
+                </select>
+                <input type="text" id="station-search-box" placeholder="Search station name..." class="filter-input">
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table" id="stations-table">
+                    <thead>
+                        <tr>
+                            <th>Station Name</th>
+                            <th>City</th>
+                            <th>Total Sessions</th>
+                            <th>Total Energy (kWh)</th>
+                            <th>Avg Energy</th>
+                            <th>Availability (%)</th>
+                            <th>Operational Health</th>
+                            <th>Usage Cluster</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for st in segmentation.stations | default([]) %}
+                        <tr class="station-row" data-cluster="{{ st.Cluster_Label }}">
+                            <td class="font-bold">{{ st['Station Name'] }}</td>
+                            <td>{{ st['City'] }}</td>
+                            <td>{{ "{:,}".format(st['Total_Sessions']) }}</td>
+                            <td>{{ "{:,.2f}".format(st['Total_Energy_kWh']) }}</td>
+                            <td>{{ "{:,.2f}".format(st['Avg_Energy_kWh']) }} kWh</td>
+                            <td><strong>{{ st.Availability_Pct | default(100.0) }}%</strong></td>
+                            <td>
+                                {% if st.Health_Status == "Optimal" %}
+                                <span class="badge badge-normal"><i data-lucide="check"></i> Optimal</span>
+                                {% elif st.Health_Status == "Monitored" %}
+                                <span class="badge badge-docs"><i data-lucide="eye"></i> Monitored</span>
+                                {% else %}
+                                <span class="badge badge-fault"><i data-lucide="alert-circle"></i> Attention</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if st.Cluster_ID == 2 %}
+                                <span class="badge badge-cluster-high"><i data-lucide="zap"></i> Higher Usage</span>
+                                {% elif st.Cluster_ID == 1 %}
+                                <span class="badge badge-cluster-med"><i data-lucide="activity"></i> Medium Usage</span>
+                                {% else %}
+                                <span class="badge badge-cluster-low"><i data-lucide="clock"></i> Lower Usage</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

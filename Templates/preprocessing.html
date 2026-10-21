@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-container">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Data Preprocessing & Feature Engineering</h1>
+            <p class="page-subtitle">Transformation pipeline converting raw session logs into chronological, leakage-free hourly forecasting features.</p>
+        </div>
+        <div class="model-badge-active">
+            <i data-lucide="sliders"></i>
+            <span>82,606 Hourly Steps Created</span>
+        </div>
+    </div>
+
+    <!-- PREPROCESSING STAGES (FROM PPT SLIDE 6) -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i data-lucide="git-commit"></i> 5-Stage Data Pipeline Architecture</h3>
+        </div>
+        <div class="card-body">
+            <div class="pipeline-steps">
+                <div class="step-card">
+                    <span class="step-num">STAGE 1</span>
+                    <span class="step-title">Charging Sessions</span>
+                    <span class="step-sub">259k+ raw session logs</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card">
+                    <span class="step-num">STAGE 2</span>
+                    <span class="step-title">Data Cleaning</span>
+                    <span class="step-sub">Drop invalid timestamps, nulls, energy &le; 0</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card">
+                    <span class="step-num">STAGE 3</span>
+                    <span class="step-title">Datetime Conversion</span>
+                    <span class="step-sub">Mixed format ISO datetime parsing</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card">
+                    <span class="step-num">STAGE 4</span>
+                    <span class="step-title">Hourly Aggregation</span>
+                    <span class="step-sub">Sum energy per continuous hour</span>
+                </div>
+                <div class="step-arrow"><i data-lucide="arrow-right"></i></div>
+                <div class="step-card step-highlight">
+                    <span class="step-num">STAGE 5</span>
+                    <span class="step-title">Feature Engineering</span>
+                    <span class="step-sub">Lags (t-1, t-24), hour, day, weekend</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ENGINEERED FEATURES DETAIL -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><i data-lucide="cpu"></i> Engineered Feature Set (Zero Leakage)</h3>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Feature Name</th>
+                            <th>Description</th>
+                            <th>Range / Type</th>
+                            <th>ML Justification</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>Hour</code></td>
+                            <td>Hour of day (0 to 23)</td>
+                            <td>Integer [0, 23]</td>
+                            <td>Captures daily diurnal curve (morning commuter surge vs night off-peak).</td>
+                        </tr>
+                        <tr>
+                            <td><code>DayOfWeek</code></td>
+                            <td>Day of the week (0=Monday, 6=Sunday)</td>
+                            <td>Integer [0, 6]</td>
+                            <td>Distinguishes business-day commercial charging from weekend patterns.</td>
+                        </tr>
+                        <tr>
+                            <td><code>Month</code></td>
+                            <td>Month of the year (1 to 12)</td>
+                            <td>Integer [1, 12]</td>
+                            <td>Accounts for seasonal climate and HVAC load impact on EV energy transfer.</td>
+                        </tr>
+                        <tr>
+                            <td><code>IsWeekend</code></td>
+                            <td>Weekend indicator flag</td>
+                            <td>Binary [0 or 1]</td>
+                            <td>High-weight categorical signal for commuter absence.</td>
+                        </tr>
+                        <tr>
+                            <td><code>PrevHour_Demand</code></td>
+                            <td>Immediate lag demand (t-1) in kWh</td>
+                            <td>Continuous (kWh &ge; 0)</td>
+                            <td>Short-term momentum: current charging session persistence.</td>
+                        </tr>
+                        <tr>
+                            <td><code>PrevDay_Demand</code></td>
+                            <td>Previous-day same-hour demand (t-24) in kWh</td>
+                            <td>Continuous (kWh &ge; 0)</td>
+                            <td>Strongest predictive feature (57.3% gain): daily cyclical rhythm.</td>
+                        </tr>
+                        <tr style="background-color: #f0fdf4;">
+                            <td><strong><code>Target_NextHour_Demand</code></strong></td>
+                            <td><strong>Target variable (t+1 demand in kWh)</strong></td>
+                            <td><strong>Continuous (kWh &ge; 0)</strong></td>
+                            <td><strong>Supervised regression target for XGBRegressor.</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
